@@ -1,0 +1,29 @@
+# Here's an example usage to find Gerunds in the english language
+#
+java Grep "[^aeiou]+[aeiou][^aeiou]+ing:V" < pos.txt > gerunds.txt
+
+# I got 2419 "hits" on that regex (my favorite is "yackety-yakking")
+
+# Here's what the results look like 
+
+match:abating:V
+match:abdicating:V
+match:ablating:V
+match:about-facing:V
+match:abusing:V
+match:accelerating:V
+match:accreting:V
+match:accumulating:V
+match:accusing:V
+
+... etc.,
+
+match:wrangling:V
+match:yackety-yakking:V
+match:yapping:V
+match:yipping:V
+match:yodeling:V
+match:yodelling:V
+match:zapping:V
+match:zigzagging:V
+match:zipping:V
