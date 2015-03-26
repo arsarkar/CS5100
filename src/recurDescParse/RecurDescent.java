@@ -1,7 +1,30 @@
 package recurDescParse;
 
 import java.util.*;
-
+/**
+ * @version 1.0
+ * @author Arkopaul Sarkar
+ *
+ *Recursive Descent Parser for the following CFG
+ *1.	E -> T|T+E|V=E
+ *2.	T -> F|T*F
+ *3.	F -> C|V|(E)
+ *4.	V -> x|y|z
+ *5.	C -> D|DC
+ *6.	D -> 0|1|2|3|4|5|6|7|8|9
+ *Only rule 2 is left recursive with a form T -> T*F|F
+ *To remove left recursion, this rule can be substituted by the following two rules.
+ *T -> FT’
+ *T’ -> *FT’|$
+ *Modified CFG without left recursion
+ *1.	E -> T|T+E|V=E
+ *2.	T -> FT’
+ *3.	T’ -> *FT’|$
+ *4.	F -> C|V|(E)
+ *5.	V -> x|y|z
+ *6.	C -> D|DC
+ *7.	D -> 0|1|2|3|4|5|6|7|8|9
+ */
 public class RecurDescent {
 	
 	static char plus = '+';
@@ -37,9 +60,14 @@ public class RecurDescent {
             	rd.expression.add(exp.charAt(i));
             }
             //call non-terminal function to start parsing
+            System.out.println("AST----->");
             if(!rd.expr()){
-            	System.out.println("Expression is not valid");
+            	System.out.println("\nExpression is not valid");
             }
+            else{
+            	System.out.println("\nExpression is valid");
+            }
+            System.out.println("");	
             
         }
         stdin.close();
@@ -48,10 +76,12 @@ public class RecurDescent {
 	
 	
 	private boolean match(char c) {
-		
-		if(expression.get(0).equals(c)){
-			expression.remove(0);
-			return true;
+		if (expression.size()>0){
+			if(expression.get(0).equals(c)){
+				System.out.print("\t"+expression.get(0));
+				expression.remove(0);
+				return true;
+			}
 		}
 		return false;
 		
@@ -59,22 +89,34 @@ public class RecurDescent {
 	
 	//E ::= T|T+E|V=E 
 	public boolean expr(){
+		boolean isTerm = true;
 		
-		if (term()){
-			if (match(plus)){
-				if(expr()){
-					return true;
-				}
-			}
-			return true;
+		//peek into the next to next slot in the stack to select proper rule
+		//from E -> T+E or E -> V=E
+		if(expression.size()>1){
+			if (expression.get(1).equals(equal))
+				isTerm = false;
 		}
-		else if (variable()){
-			if (match(equal)){
-				if (expr()){
-					return true;
+		
+		if (isTerm){
+			if(term()){
+				if (match(plus)){
+					if(expr()){
+						return true;
+					}
+				}
+				return true;
+			}
+		}
+		else{
+			if(variable()){
+				if(match(equal)){
+					if(expr()){
+						return true;
+					}
 				}
 			}
-		}		
+		}
 		return false;
 	}
 
@@ -91,8 +133,10 @@ public class RecurDescent {
 	//T’ ::= *FT’|$
 	private boolean termPrime() {
 		if(match(star)){
-			if(termPrime()){
-				return true;
+			if(factor()){
+				if(termPrime()){
+					return true;
+				}
 			}
 		}
 		return true;
@@ -133,12 +177,10 @@ public class RecurDescent {
 	//C ::= D|DC
 	private boolean constant() {
 		if (digit()){
-			return true;
-		}
-		else if (digit()){
 			if(constant()){
 				return true;
 			}
+			return true;
 		}
 		return false;
 	}
@@ -155,3 +197,56 @@ public class RecurDescent {
 	
 	
 }
+
+/** Console output---------------->
+
+x+y
+AST----->
+	x	+	y
+Expression is valid
+
+x*y
+AST----->
+	x	*	y
+Expression is valid
+
+x+y*z
+AST----->
+	x	+	y	*	z
+Expression is valid
+
+z=x*y
+AST----->
+	z	=	x	*	y
+Expression is valid
+
+(x+y)
+AST----->
+	(	x	+	y	)
+Expression is valid
+
+z=3*x+4*y
+AST----->
+	z	=	3	*	x	+	4	*	y
+Expression is valid
+
+z=123*x+234*y
+AST----->
+	z	=	1	2	3	*	x	+	2	3	4	*	y
+Expression is valid
+
+z = x + 3 * (x+y)
+AST----->
+	z	=	x	+	3	*	(	x	+	y	)
+Expression is valid
+
++xy
+AST----->
+
+Expression is not valid
+
+z==x*y
+AST----->
+	z	=
+Expression is not valid
+**/
